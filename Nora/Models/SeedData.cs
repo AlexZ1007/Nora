@@ -30,12 +30,6 @@ namespace Nora.Models
                     },
                     new IdentityRole
                     {
-                        Id = "2c5e174e-3b0e-446f-86af-483d56fd7211",
-                        Name = "Editor",
-                        NormalizedName = "EDITOR"
-                    },
-                    new IdentityRole
-                    {
                         Id = "2c5e174e-3b0e-446f-86af-483d56fd7212",
                         Name = "User",
                         NormalizedName = "USER"
@@ -59,16 +53,6 @@ namespace Nora.Models
                     },
                     new ApplicationUser
                     {
-                        Id = "8e445865-a24d-4543-a6c6-9443d048cdb1",
-                        UserName = "editor@test.com",
-                        EmailConfirmed = true,
-                        NormalizedEmail = "EDITOR@TEST.COM",
-                        Email = "editor@test.com",
-                        NormalizedUserName = "EDITOR@TEST.COM",
-                        PasswordHash = hasher.HashPassword(null, "Editor1!")
-                    },
-                    new ApplicationUser
-                    {
                         Id = "8e445865-a24d-4543-a6c6-9443d048cdb2",
                         UserName = "user@test.com",
                         EmailConfirmed = true,
@@ -85,11 +69,6 @@ namespace Nora.Models
                     {
                         RoleId = "2c5e174e-3b0e-446f-86af-483d56fd7210",
                         UserId = "8e445865-a24d-4543-a6c6-9443d048cdb0"
-                    },
-                    new IdentityUserRole<string>
-                    {
-                        RoleId = "2c5e174e-3b0e-446f-86af-483d56fd7211",
-                        UserId = "8e445865-a24d-4543-a6c6-9443d048cdb1"
                     },
                     new IdentityUserRole<string>
                     {
