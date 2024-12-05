@@ -12,5 +12,12 @@ namespace Nora.Data
         {
         }
 
-    }
+		public DbSet<Channel> Channels { get; set; }
+		public DbSet<Category> Categories { get; set; }
+		public DbSet<Message> Messages { get; set; }
+		public DbSet<CategoryChannel> CategoryChannels { get; set; }
+		
+
+	}
+
 }
