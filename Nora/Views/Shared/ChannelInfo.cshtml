@@ -1,0 +1,26 @@
+﻿<div class="card-body">
+
+    <!-- Title -->
+    <h3 class="card-title py-3 px-3 rounded-2 text-center text-dark fw-bold">
+        @Model.Title
+    </h3>
+
+    <!-- Subtitle -->
+    <h5 class="card-subtitle mt-3 text-muted">
+        @Model.Description
+    </h5>
+
+    <div class="d-flex justify-content-between align-items-center flex-row mt-5 border-top pt-3">
+
+        <div class="d-flex align-items-center">
+            <i class="bi bi-person me-2 text-secondary"></i>
+            <span class="text-secondary fw-semibold">@Model.User.UserName</span>
+        </div>
+
+        <span class="rounded px-2 py-1 text-dark fw-semibold">
+            @Model.Date
+        </span>
+
+    </div>
+
+</div>

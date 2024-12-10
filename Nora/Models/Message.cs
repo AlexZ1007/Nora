@@ -13,15 +13,13 @@ namespace Nora.Models
 
 		public DateTime Date { get; set; }
 
+        public string? UserId { get; set; }
 
 		public int ChannelId { get; set; }
 
 
 		public virtual Channel? Channel { get; set; }
-
-
-		//public string? UserId { get; set; }
-		//public virtual ApplicationUser? User { get; set; }
+		public virtual ApplicationUser? User { get; set; }
 
 	}
 }
