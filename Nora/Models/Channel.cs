@@ -5,7 +5,7 @@ namespace Nora.Models
 	public class Channel
 	{
 		[Key]
-		public string Id { get; set; }
+		public int Id { get; set; }
 
 
 		[Required(ErrorMessage = "Titlul este obligatoriu")]
@@ -14,18 +14,20 @@ namespace Nora.Models
 		public string Title { get; set; }
 
 
-		[Required(ErrorMessage = "Descrierea canalului este obligatoriu")]
+		[Required(ErrorMessage = "Descrierea canalului este obligatorie")]
 		public string Description { get; set; }
 
+        public string? UserId { get; set; }
 
-		public DateTime Date { get; set; }
+        public DateTime Date { get; set; }
 
 
-		[Required(ErrorMessage = "Categoria este obligatorie")]
+		//[Required(ErrorMessage = "Categoria este obligatorie")]
+
 		public virtual ICollection<CategoryChannel>? CategoryChannels { get; set; }
+		public virtual ICollection<Message>? Messages { get; set; }
+        public virtual ICollection<UserChannel>? UserChannels { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
-
-		//vom avea mai multe comentarii
-		public virtual ICollection<Message> Messages { get; set; }
-	}
+    }
 }
