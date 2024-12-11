@@ -1,0 +1,25 @@
+﻿@{
+    var users = ViewBag.Users as IEnumerable<Nora.Models.ApplicationUser>;
+}
+<br />
+<h2 class="text-center">Members </h2>
+<br />
+
+<div class="container">
+    <div class="row">
+        @if (users != null && users.Any())
+        {
+            @foreach (var user in users)
+            {
+                <div class="col-sm-12 mb-4">
+                    <p>@user.UserName</p>
+                </div>
+            }
+
+        }
+        else
+        {
+            <p>No users found.</p>
+        }
+    </div>
+</div>
