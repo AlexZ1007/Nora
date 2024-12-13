@@ -1,0 +1,41 @@
+﻿@model Nora.Models.Channel
+
+<h2 class="text-center mt-5">Detalii Canal</h2>
+<br />
+
+<div class="container">
+    <div class="row">
+        <div class="col-8 offset-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>@Model.Title</h3>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Descriere</h5>
+                    <p class="card-text">@Model.Description</p>
+
+                    <h5 class="card-title">Categorii</h5>
+                    <ul class="list-group list-group-flush">
+                        @if (Model.CategoryChannels != null && Model.CategoryChannels.Any())
+                        {
+                            foreach (var categoryChannel in Model.CategoryChannels)
+                            {
+                                <li class="list-group-item">@categoryChannel.Category.CategoryName</li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item">Nicio categorie asociată.</li>
+                        }
+                    </ul>
+                </div>
+                <div class="card-footer text-end">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editează</a>
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Șterge</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
