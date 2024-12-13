@@ -1,4 +1,6 @@
-﻿
+﻿@{
+    var channels = ViewBag.Channels as IEnumerable<Nora.Models.Channel>;
+}
 
 <br />
 <h2 class="text-center">Afisare canale</h2>
@@ -12,16 +14,24 @@
     </div>
 }
 
-
 <div class="container">
     <div class="row">
-        @foreach (var channel in ViewBag.Channels)
+        @if (channels != null)
         {
-            <div class="col-sm-4 mb-4">
-                <div class="card">
-                    <partial name="ChannelInfo" model="channel" />
-                    <a class="btn btn-success" asp-controller="Channels" asp-action="Show" asp-route-id="@channel.Id">Acceseaza canal</a>
+            foreach (var chat in channels)
+            {
+                <div class="col-sm-4 mb-4">
+                    <div class="card">
+                        <partial name="ChannelInfo" model="chat" />
+                        <a class="btn btn-success" asp-controller="Channels" asp-action="Show" asp-route-id="@chat.Id">Acceseaza canal</a>
+                    </div>
                 </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-warning text-center">
+                No channels available.
             </div>
         }
     </div>

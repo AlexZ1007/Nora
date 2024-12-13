@@ -1,0 +1,52 @@
+﻿@model Nora.Models.Channel
+
+<h2 class="text-center mt-5">Adăugare Channel</h2>
+<br />
+
+<div class="container mr-5">
+    <div class="row">
+        <div class="col-6 offset-3">
+            <form method="post" asp-action="New" asp-controller="Channels">
+                <div class="form-group">
+                    <label asp-for="Title" class="form-label">Titlu Canal</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="form-label">Descriere Canal</label>
+                    <textarea asp-for="Description" class="form-control summernote"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SelectedCategoryIds" class="form-label">Categorii</label>
+                    <div id="categories">
+                        @foreach (var category in (IEnumerable<Nora.Models.Category>)ViewBag.Categories)
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="SelectedCategoryIds" value="@category.Id" />
+                                <label class="form-check-label">@category.CategoryName</label>
+                            </div>
+                        }
+                    </div>
+                    <span asp-validation-for="SelectedCategoryIds" class="text-danger"></span>
+                </div>
+
+                <button class="btn btn-success" type="submit">Adaugă Canal</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('form').on('submit', function (e) {
+            const checkboxes = $('input[name="SelectedCategoryIds"]:checked');
+            if (checkboxes.length === 0) {
+                e.preventDefault();
+                alert("Trebuie să selectați cel puțin o categorie.");
+            }
+        });
+    });
+</script>
