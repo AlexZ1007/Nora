@@ -7,6 +7,7 @@ using Nora.Models;
 
 namespace Nora.Controllers
 {
+
     [Authorize(Roles ="User, Admin")]
     public class ChannelsController : Controller
     {
@@ -36,6 +37,7 @@ namespace Nora.Controllers
                      .OrderByDescending(c => c.Date);
             ViewBag.channels = channels.ToList();
 
+
             if (TempData.ContainsKey("message"))
             {
                 ViewBag.Message = TempData["message"];
@@ -44,6 +46,7 @@ namespace Nora.Controllers
 
             return View();
         }
+
 
         [HttpGet]
         public IActionResult New()
@@ -197,6 +200,40 @@ namespace Nora.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [Authorize(Roles = "User,Admin")]
+        public IActionResult UserChannels()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var channels = db.Channels
+                .Include(c => c.User)
+                .Include(c => c.UserChannels)
+                .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId))
+                .OrderByDescending(c => c.Date);
+
+
+
+            ViewBag.Channels = channels;
+
+
+            return View();
+        }
+
+        [Authorize(Roles = "User,Admin")]
+        public IActionResult MembersList(int? id)
+        {
+            var users = db.Users
+               .Include(u => u.UserChannels)
+               .Where(u => u.UserChannels != null && u.UserChannels.Any(uc => uc.ChannelId == id))
+               .OrderBy(u => u.UserName);
+
+            ViewBag.Users = users;
+
+            return View();
+        }
+
+       
 
     }
 }
