@@ -1,14 +1,18 @@
 ﻿@model Nora.Models.Channel
 
-<h2 class="text-center mt-5">Detalii Canal</h2>
+<h2 class="text-center mt-5">Channel details</h2>
 <br />
+
 
 <div class="container">
     <div class="row">
         <div class="col-8 offset-2">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
                     <h3>@Model.Title</h3>
+                    <a class="btn btn-success" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
+                            <i class="bi bi-people"></i> Members
+                    </a> 
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">Descriere</h5>

@@ -6,25 +6,20 @@
 <h2 class="text-center">My channels</h2>
 <br />
 
+<div class="d-flex justify-content-end mb-2 p-3">
+    <a class="btn btn-primary" asp-controller="Channels" asp-action="Create"><i class="bi bi-plus"></i> Add Channel</a>
+</div>
+
 <div class="container">
     <div class="row">
         @if (channels != null && channels.Any())
         {
             @foreach (var channel in channels)
             {
-                <div class="col-sm-4 mb-4">
-                    <div class="card">
-
-                        <!-- Use the partial as intended -->
-                        <partial name="ChannelInfo" model="@channel" /> 
-
-                        <!-- Link to access the channel -->
-                        <a class="btn btn-success" asp-controller="Channels" asp-action="Show" asp-route-id="@channel.Id">
-                            Acceseaza canal
-                        </a>
-                        <a class="btn btn-success" asp-controller="Channels" asp-action="MembersList" asp-route-id="@channel.Id">
-                            Vezi membri
-                        </a>
+                <div class="col-sm-4 mb-4 d-flex">
+                    <div class="card flex-grow-1 d-flex flex-column">
+                        <!-- Partial -->
+                        <partial name="ChannelInfo" model="@channel" view-data='@new ViewDataDictionary(ViewData) { { "ChannelButtonAction", "Show" } }' />
                     </div>
                 </div>
             } 

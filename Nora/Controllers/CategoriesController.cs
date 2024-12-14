@@ -57,7 +57,7 @@ namespace Nora.Controllers
             {
                 db.Categories.Add(cat);
                 db.SaveChanges();
-                TempData["message"] = "Categoria a fost adaugata";
+                TempData["message"] = "Category created successfully!";
                 return RedirectToAction("Index");
             }
 
@@ -83,7 +83,7 @@ namespace Nora.Controllers
 
                 category.CategoryName = requestCategory.CategoryName;
                 db.SaveChanges();
-                TempData["message"] = "Categoria a fost modificata!";
+                TempData["message"] = "Category modified successfully!";
                 return RedirectToAction("Index");
             }
             else
@@ -99,7 +99,7 @@ namespace Nora.Controllers
 
             db.Categories.Remove(category);
 
-            TempData["message"] = "Categoria a fost stearsa";
+            TempData["message"] = "Category deleted successfully!";
             db.SaveChanges();
             return RedirectToAction("Index");
         }

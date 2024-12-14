@@ -1,8 +1,8 @@
 ﻿@{
-	ViewBag.Title = "Lista categorii";
+	ViewBag.Title = "Categories List";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2 class="text-center">@ViewBag.Title</h2>
 <br />
 @if(TempData.ContainsKey("message"))
 {
@@ -11,18 +11,29 @@
 
 
 <br />
+
+<div class="d-flex justify-content-end mb-3">
+	<a class="btn btn-primary" asp-controller="Categories" asp-action="New"><i class="bi bi-plus"></i> Add category</a>
+</div>
+
+
 @foreach(Nora.Models.Category category in ViewBag.Categories)
 {
-	<div class="form-group">
-		<label asp-for="@category.CategoryName" class="form-label">Denumire categorie</label>
-		<div><i class="bi bi-globe"></i>@category.CategoryName</div>
-	</div>
-	<br />
-	<a class="btn alert-success" asp-controller="Categories" asp-action="Show" asp-route-id="@category.Id">Afisare categorie</a>
-	<a class="btn alert-success" asp-controller="Categories" asp-action="Edit" asp-route-id="@category.Id">Editare categorie</a>
-	<br />
-	<br />
+    <div class="form-group p-3 border rounded bg-light mb-2">
+        <div class="d-flex align-items-center justify-content-between">
+            <!-- Category Name with Icon -->
+            <div class="d-flex align-items-center">
+                @* <i class="bi bi-globe me-2 text-primary"></i> *@
+                <span class="fw-bold text-dark">@category.CategoryName</span>
+            </div>
+            <!-- Buttons -->
+            <div>
+                <a class="btn btn-success me-2" asp-controller="Categories" asp-action="Show" asp-route-id="@category.Id">Show</a>
+                <a class="btn btn-warning" asp-controller="Categories" asp-action="Edit" asp-route-id="@category.Id">Edit</a>
+            </div>
+        </div>
+    </div>
+
+
 }
-<br />
-<a class="btn btn-success" asp-controller="Categories" asp-action="New">Adauga o noua categorie</a>
 <br />

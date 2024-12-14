@@ -87,7 +87,17 @@ namespace Nora.Controllers
 
             await db.SaveChangesAsync();
 
-            TempData["message"] = "Canalul a fost adăugat cu succes!";
+            var userChannel = new UserChannel();
+
+            userChannel.ChannelId = channel.Id;
+            userChannel.UserId = currentUser.Id;
+
+            db.UserChannels.Add(userChannel);
+
+            // Save 
+            await db.SaveChangesAsync();
+
+            TempData["message"] = "Channel created successfully!";
             TempData["messageType"] = "success";
 
             return RedirectToAction("Index");
@@ -166,7 +176,7 @@ namespace Nora.Controllers
                 }
 
                 db.SaveChanges();
-                TempData["message"] = "Canalul a fost actualizat cu succes!";
+                TempData["message"] = "Channel modified successfully!";
                 TempData["messageType"] = "success";
 
                 return RedirectToAction("Index");
@@ -195,7 +205,7 @@ namespace Nora.Controllers
             db.Channels.Remove(channel);
             await db.SaveChangesAsync();
 
-            TempData["message"] = "Canalul a fost șters cu succes!";
+            TempData["message"] = "Channel deleted successfully!";
             TempData["messageType"] = "success";
 
             return RedirectToAction("Index");
@@ -207,11 +217,12 @@ namespace Nora.Controllers
             var userId = _userManager.GetUserId(User);
 
             var channels = db.Channels
-                .Include(c => c.User)
-                .Include(c => c.UserChannels)
-                .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId))
-                .OrderByDescending(c => c.Date);
-
+                     .Include(c => c.CategoryChannels)
+                     .ThenInclude(cc => cc.Category)
+                     .Include(c => c.User)
+                     .Include(c => c.UserChannels)
+                     .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId))
+                     .OrderByDescending(c => c.Date);
 
 
             ViewBag.Channels = channels;
@@ -232,8 +243,32 @@ namespace Nora.Controllers
 
             return View();
         }
+        [Authorize(Roles = "User,Admin")]
+        public async Task<IActionResult> JoinChannel(int? id)
+        {
 
-       
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            var userChannel = new UserChannel();
+
+            // test if the user already joined the channel
+            var userChannelExists = db.UserChannels.Any(uc => uc.UserId == currentUser.Id && uc.ChannelId == id);
+            if (userChannelExists) {
+                return RedirectToAction("Show", new { id });
+            }
+
+            userChannel.ChannelId = id;
+            userChannel.UserId = currentUser.Id;
+
+            db.UserChannels.Add(userChannel);
+
+            // Save 
+            await db.SaveChangesAsync();
+
+
+            return RedirectToAction("Show", new { id });
+        }
+
 
     }
 }

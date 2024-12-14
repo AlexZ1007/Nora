@@ -1,6 +1,6 @@
 ﻿@model Nora.Models.Channel
 
-<h2 class="text-center mt-5">Editare Canal</h2>
+<h2 class="text-center mt-5">Edit Channel</h2>
 <br />
 
 <div class="container mr-5">
@@ -9,19 +9,19 @@
             <form method="post" asp-action="Edit" asp-controller="Channels" asp-route-id="@Model.Id">
 
                 <div class="form-group">
-                    <label asp-for="Title" class="form-label">Titlu Canal</label>
+                    <label asp-for="Title" class="form-label">Channel title</label>
                     <input asp-for="Title" class="form-control" />
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Description" class="form-label">Descriere Canal</label>
+                    <label asp-for="Description" class="form-label">Channel description</label>
                     <textarea asp-for="Description" class="form-control summernote"></textarea>
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Categorii</label>
+                    <label class="form-label">Categories</label>
                     <div id="categories">
                         @foreach (var category in (IEnumerable<Nora.Models.Category>)ViewBag.Categories)
                         {
@@ -37,8 +37,8 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary mt-3" type="submit">Salvează Modificările</button>
-                <a class="btn btn-secondary mt-3" asp-action="Index">Anulează</a>
+                <button class="btn btn-primary mt-3" type="submit">Save</button>
+                <a class="btn btn-secondary mt-3" asp-action="Index">Cancel</a>
             </form>
         </div>
     </div>

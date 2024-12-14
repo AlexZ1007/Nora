@@ -1,28 +1,25 @@
 ﻿@model Nora.Models.Category
 @{
-    ViewBag.Title = "Afisare categorie";
+    ViewBag.Title = "Show Category";
 }
 
+<div class="container mt-4">
+    <!-- Title Section -->
+    <div class="d-flex justify-content-center align-items-center">
+        <h2>@ViewBag.Title</h2>
+    </div>
 
-<h2>@ViewBag.Title</h2>
+    <a class="btn btn-success" href="/Categories/Index/">Categories List</a>
 
-<br />
+    <hr />
 
-<p>@Model.CategoryName</p>
+    <!-- Category Name and Delete Button Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <p class="fs-4 fw-bold text-dark m-0">@Model.CategoryName</p>
+        <form method="post" asp-controller="Categories" asp-action="Delete" asp-route-id="@Model.Id">
+            <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+    </div>
 
 
-<form method="post" asp-controller="Categories" asp-action="Delete"
-      asp-route-id="@Model.Id">
-
-    <button class="btn btn-danger" type="submit">Sterge categoria</button>
-
-</form>
-
-<br />
-
-<a class="btn alert-success" href="/Categories/Index/">Afisare lista categorii</a>
-
-<br />
-<hr />
-<br />
-
+</div>
