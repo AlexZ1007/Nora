@@ -35,7 +35,8 @@ namespace Nora.Controllers
                      .ThenInclude(cc => cc.Category) 
                      .Include(c => c.User)           
                      .OrderByDescending(c => c.Date);
-            ViewBag.channels = channels.ToList();
+
+
 
 
             if (TempData.ContainsKey("message"))
@@ -43,6 +44,26 @@ namespace Nora.Controllers
                 ViewBag.Message = TempData["message"];
                 ViewBag.Alert = TempData["messageType"];
             }
+
+            // MOTOR DE CAUTARE
+
+            var search = "";
+
+            if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
+            {
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); 
+
+                channels = db.Channels
+                    .Where(c => c.Title.Contains(search))
+                    .Include(c => c.CategoryChannels)
+                    .ThenInclude(cc => cc.Category)
+                    .Include(c => c.User)
+                    .OrderByDescending(c => c.Date);
+
+            }
+
+            ViewBag.SearchString = search;
+            ViewBag.channels = channels.ToList();
 
             return View();
         }
@@ -91,6 +112,8 @@ namespace Nora.Controllers
 
             userChannel.ChannelId = channel.Id;
             userChannel.UserId = currentUser.Id;
+            userChannel.IsModerator = true;
+            userChannel.IsAccepted = true;
 
             db.UserChannels.Add(userChannel);
 
@@ -225,6 +248,25 @@ namespace Nora.Controllers
                      .OrderByDescending(c => c.Date);
 
 
+
+            var search = "";
+
+            if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
+            {
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim();
+
+                channels = db.Channels
+                     .Include(c => c.CategoryChannels)
+                     .ThenInclude(cc => cc.Category)
+                     .Include(c => c.User)
+                     .Include(c => c.UserChannels)
+                     .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId) && c.Title.Contains(search))
+                     .OrderByDescending(c => c.Date);
+
+
+            }
+
+            ViewBag.SearchString = search;
             ViewBag.Channels = channels;
 
 
@@ -234,12 +276,11 @@ namespace Nora.Controllers
         [Authorize(Roles = "User,Admin")]
         public IActionResult MembersList(int? id)
         {
-            var users = db.Users
-               .Include(u => u.UserChannels)
-               .Where(u => u.UserChannels != null && u.UserChannels.Any(uc => uc.ChannelId == id))
-               .OrderBy(u => u.UserName);
+            var members = db.UserChannels.Include("User")
+               .Where(uc => uc.ChannelId == id)
+               .OrderBy(uc => uc.JoinDate);
 
-            ViewBag.Users = users;
+            ViewBag.Members = members;
 
             return View();
         }
@@ -251,7 +292,6 @@ namespace Nora.Controllers
 
             var userChannel = new UserChannel();
 
-            // test if the user already joined the channel
             var userChannelExists = db.UserChannels.Any(uc => uc.UserId == currentUser.Id && uc.ChannelId == id);
             if (userChannelExists) {
                 return RedirectToAction("Show", new { id });
@@ -259,6 +299,7 @@ namespace Nora.Controllers
 
             userChannel.ChannelId = id;
             userChannel.UserId = currentUser.Id;
+            userChannel.JoinDate = DateTime.Now;
 
             db.UserChannels.Add(userChannel);
 

@@ -11,6 +11,7 @@ namespace Nora.Models
         public string? UserId { get; set; }
         public int? ChannelId { get; set; }
         public bool IsModerator { get; set; }
+        public bool IsAccepted { get; set; }
         public DateTime JoinDate { get; set; }
 
         public virtual ApplicationUser? User { get; set; }
