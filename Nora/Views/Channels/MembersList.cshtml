@@ -1,25 +1,120 @@
 ﻿@{
-    var users = ViewBag.Users as IEnumerable<Nora.Models.ApplicationUser>;
+    var members = ViewBag.Members as IEnumerable<Nora.Models.UserChannel>;
 }
 <br />
 <h2 class="text-center">Members</h2>
 <br />
 
+
 <div class="container">
     <div class="row">
-        @if (users != null && users.Any())
-        {
-            @foreach (var user in users)
-            {
-                <div class="col-sm-12 mb-4">
-                    <p>@user.UserName</p>
-                </div>
-            }
+        <div class="col-sm-12">
+            <table class="table table-bordered table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>User Name</th>
+                        <th>Role</th>
+                        <th>Join Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (members != null && members.Any())
+                    {
+                        @foreach (var member in members)
+                        {
+                            <tr data-member-id="@member.Id">
+                                <td>@member.User.UserName</td>
+                                <td>@(member.IsModerator ? "Moderator" : "Member")</td>
+                                <td>@member.JoinDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (!member.IsAccepted)
+                                    {
+                                        <button class="btn btn-success btn-sm" data-action="accept">Accept</button>
+                                        <button class="btn btn-danger btn-sm" data-action="deny">Deny</button>
+                                    }
+                                    else if (member.IsAccepted && !member.IsModerator)
+                                    {
+                                        <button class="btn btn-warning btn-sm" data-action="makeModerator">Make Moderator</button>
+                                        <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>
+                                    }
+                                    else if (member.IsAccepted && member.IsModerator)
+                                    {
+                                        <button class="btn btn-secondary btn-sm" data-action="removeModerator">Remove Moderator</button>
+                                        <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>
+                                    }
+                                </td>
 
-        }
-        else
-        {
-            <p>No users found.</p>
-        }
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center">No users found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(document).on("click", ".btn", function () {
+                var button = $(this);
+                var action = button.data("action");
+                var memberId = button.closest("tr").data("member-id");
+                var row = button.closest("tr");
+
+                $.ajax({
+                    url: `/UserChannel/${action}/${memberId}`, 
+                    method: 'POST',
+                    contentType: 'application/json',
+                    success: function (response) {
+                        if (response.success) {
+                            if (response.userChannel) {
+                                // Recreate the row with updated data
+                                var userChannel = response.userChannel;
+                                var newRowContent = `
+                                                <td>${userChannel.user.userName}</td>
+                                                <td>${userChannel.isModerator ? "Moderator" : "Member"}</td>
+                                                <td>${userChannel.joinDate}</td>
+                                                <td>
+                                                    ${!userChannel.isAccepted ? `
+                                                    <button class="btn btn-success btn-sm" data-action="accept">Accept</button>
+                                                        <button class="btn btn-danger btn-sm" data-action="deny">Deny</button>` : ""}
+                                                    ${userChannel.isAccepted && !userChannel.isModerator ? `
+                                                        <button class="btn btn-warning btn-sm" data-action="makeModerator">Make Moderator</button>
+                                                        <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>` : ""}
+                                                    ${userChannel.isAccepted && userChannel.isModerator ? `
+                                                        <button class="btn btn-secondary btn-sm" data-action="removeModerator">Remove Moderator</button>
+                                                        <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>` : ""}
+                                                </td>
+                                        `;
+                                row.html(newRowContent);
+                            } else {
+                                row.remove(); 
+                                if($('tbody').find('tr').length == 0) {
+                                    $('tbody').html('<tr><td colspan="4" class="text-center">No users found.</td></tr>');
+                                }
+                            }
+                            // Optional: Uncomment below for notifications
+                            // alert("Action successful: " + action);
+                        } else {
+                            // Optional: Uncomment below for error notifications
+                            // alert("Error: " + response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("An error occurred: " + xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+
+}
