@@ -35,7 +35,8 @@ namespace Nora.Controllers
                      .ThenInclude(cc => cc.Category) 
                      .Include(c => c.User)           
                      .OrderByDescending(c => c.Date);
-            ViewBag.channels = channels.ToList();
+
+
 
 
             if (TempData.ContainsKey("message"))
@@ -43,6 +44,26 @@ namespace Nora.Controllers
                 ViewBag.Message = TempData["message"];
                 ViewBag.Alert = TempData["messageType"];
             }
+
+            // MOTOR DE CAUTARE
+
+            var search = "";
+
+            if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
+            {
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); 
+
+                channels = db.Channels
+                    .Where(c => c.Title.Contains(search))
+                    .Include(c => c.CategoryChannels)
+                    .ThenInclude(cc => cc.Category)
+                    .Include(c => c.User)
+                    .OrderByDescending(c => c.Date);
+
+            }
+
+            ViewBag.SearchString = search;
+            ViewBag.channels = channels.ToList();
 
             return View();
         }
@@ -227,6 +248,25 @@ namespace Nora.Controllers
                      .OrderByDescending(c => c.Date);
 
 
+
+            var search = "";
+
+            if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
+            {
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim();
+
+                channels = db.Channels
+                     .Include(c => c.CategoryChannels)
+                     .ThenInclude(cc => cc.Category)
+                     .Include(c => c.User)
+                     .Include(c => c.UserChannels)
+                     .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId) && c.Title.Contains(search))
+                     .OrderByDescending(c => c.Date);
+
+
+            }
+
+            ViewBag.SearchString = search;
             ViewBag.Channels = channels;
 
 
