@@ -10,10 +10,15 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between">
                     <h3>@Model.Title</h3>
-                    <a class="btn btn-success" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
+
+                    @if (Model.IsUserMember)//@if (Model.IsUserMember || User.IsInRole("Admin"))
+                    {
+                        <a class="btn btn-success" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
                             <i class="bi bi-people"></i> Members
-                    </a> 
+                        </a>
+                    }
                 </div>
+
                 <div class="card-body">
                     <h5 class="card-title">Descriere</h5>
                     <p class="card-text">@Model.Description</p>
@@ -33,12 +38,15 @@
                         }
                     </ul>
                 </div>
+                @if(Model.CreatorUserId==Model.UserId)
+                {
                 <div class="card-footer text-end">
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editează</a>
                     <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-danger">Șterge</button>
                     </form>
                 </div>
+                }
             </div>
         </div>
     </div>

@@ -25,6 +25,8 @@ namespace Nora.Controllers
             _userManager = userManager;
             _roleManager = roleManager;
         }
+
+        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
             if (TempData.ContainsKey("message"))
@@ -39,18 +41,21 @@ namespace Nora.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Show(int id)
         {
             Category category = db.Categories.Find(id);
             return View(category);
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult New()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public ActionResult New(Category cat)
         {
             if (ModelState.IsValid)
@@ -67,6 +72,7 @@ namespace Nora.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit(int id)
         {
             Category category = db.Categories.Find(id);
@@ -74,6 +80,7 @@ namespace Nora.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit(int id, Category requestCategory)
         {
             Category category = db.Categories.Find(id);
@@ -93,6 +100,7 @@ namespace Nora.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public ActionResult Delete(int id)
         {
             Category category = db.Categories.Find(id);

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Nora.Models
 {
@@ -6,6 +8,10 @@ namespace Nora.Models
     {
         public virtual ICollection<UserChannel>? UserChannels { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
+
+
+        [NotMapped]
+        public IEnumerable<SelectListItem>? AllRoles { get; set; }
 
     }
 }

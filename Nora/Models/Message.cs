@@ -20,6 +20,7 @@ namespace Nora.Models
 
 		public virtual Channel? Channel { get; set; }
 		public virtual ApplicationUser? User { get; set; }
+        public bool IsDeleted { get; set; }
 
-	}
+    }
 }

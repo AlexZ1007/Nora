@@ -29,15 +29,26 @@ namespace Nora.Controllers
         [Authorize(Roles = "User,Admin")]
         public IActionResult Index()
         {
+            var userId = _userManager.GetUserId(User);
 
             var channels = db.Channels
-                     .Include(c => c.CategoryChannels)
-                     .ThenInclude(cc => cc.Category) 
-                     .Include(c => c.User)           
-                     .OrderByDescending(c => c.Date);
+                        .Include(c => c.CategoryChannels)
+                        .ThenInclude(cc => cc.Category)
+                        .Include(c => c.User)
+                        .Include(c => c.UserChannels) // Include UserChannels
+                        .OrderByDescending(c => c.Date)
+                        .ToList();
 
+            var userChannels = db.UserChannels.Where(uc => uc.UserId == userId).ToList();
 
+            foreach (var channel in channels)
+            {
+                var userChannel = userChannels.FirstOrDefault(uc => uc.ChannelId == channel.Id);
 
+                // Set temporary properties
+                channel.IsUserMember = userChannel != null && userChannel.IsAccepted;
+                channel.IsPending = userChannel != null && !userChannel.IsAccepted && !userChannel.IsModerator;
+            }
 
             if (TempData.ContainsKey("message"))
             {
@@ -51,15 +62,9 @@ namespace Nora.Controllers
 
             if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
             {
-                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim(); 
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim();
 
-                channels = db.Channels
-                    .Where(c => c.Title.Contains(search))
-                    .Include(c => c.CategoryChannels)
-                    .ThenInclude(cc => cc.Category)
-                    .Include(c => c.User)
-                    .OrderByDescending(c => c.Date);
-
+                channels = channels.Where(c => c.Title.Contains(search)).ToList();
             }
 
             ViewBag.SearchString = search;
@@ -70,6 +75,7 @@ namespace Nora.Controllers
 
 
         [HttpGet]
+        [Authorize(Roles = "User,Admin")]
         public IActionResult New()
         {
             ViewBag.Categories = db.Categories.ToList(); // Assuming there's a `Categories` table in the database.
@@ -77,6 +83,7 @@ namespace Nora.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> New(Channel channel)
         {
             if (!ModelState.IsValid)
@@ -127,11 +134,13 @@ namespace Nora.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "User,Admin")]
         public IActionResult Show(int id)
         {
             var channel = db.Channels
                             .Include(c => c.CategoryChannels)
                             .ThenInclude(cc => cc.Category)
+                            .Include(c => c.UserChannels) // Include UserChannels to check membership
                             .FirstOrDefault(c => c.Id == id);
 
             if (channel == null)
@@ -139,12 +148,20 @@ namespace Nora.Controllers
                 return NotFound();
             }
 
+            var creatorUserId = channel.UserId;
+            ViewBag.CreatorUserId = creatorUserId;
+
+            var userId = _userManager.GetUserId(User);
+
+            // Check if the current user is a member of the channel
+            var userChannel = channel.UserChannels?.FirstOrDefault(uc => uc.UserId == userId);
+
+            channel.IsUserMember = userChannel != null && userChannel.IsAccepted;
+
             return View(channel);
         }
 
-
         [HttpGet]
-        [Authorize(Roles = "User,Admin")]
         public IActionResult Edit(int id)
         {
             var channel = db.Channels
@@ -159,6 +176,13 @@ namespace Nora.Controllers
 
             var categories = db.Categories.ToList();
 
+            var currentUserId = _userManager.GetUserId(User);
+
+            if (channel.UserId != currentUserId)
+            {
+                return Forbid(); // 403 Forbidden
+            }
+
             ViewBag.Categories = categories;
             ViewBag.SelectedCategoryIds = channel.CategoryChannels?.Select(cc => cc.CategoryId).ToList();
 
@@ -166,7 +190,6 @@ namespace Nora.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "User,Admin")]
         public IActionResult Edit(int id, Channel updatedChannel, List<int> SelectedCategoryIds)
         {
             var channel = db.Channels
@@ -176,6 +199,14 @@ namespace Nora.Controllers
             if (channel == null)
             {
                 return NotFound();
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Check if the current user is the creator
+            if (channel.UserId != currentUserId)
+            {
+                return Forbid(); // 403 Forbidden
             }
 
             if (ModelState.IsValid)
@@ -212,8 +243,6 @@ namespace Nora.Controllers
             return View(updatedChannel);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -222,6 +251,14 @@ namespace Nora.Controllers
             if (channel == null)
             {
                 return NotFound();
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Check if the current user is the creator
+            if (channel.UserId != currentUserId)
+            {
+                return Forbid(); // 403 Forbidden
             }
 
             db.CategoryChannels.RemoveRange(channel.CategoryChannels);
@@ -233,6 +270,8 @@ namespace Nora.Controllers
 
             return RedirectToAction("Index");
         }
+
+
 
         [Authorize(Roles = "User,Admin")]
         public IActionResult UserChannels()
@@ -247,6 +286,17 @@ namespace Nora.Controllers
                      .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId))
                      .OrderByDescending(c => c.Date);
 
+            // Pass this data to the view
+            var userChannels = db.UserChannels.Where(uc => uc.UserId == userId).ToList();
+
+            foreach (var channel in channels)
+            {
+                var userChannel = userChannels.FirstOrDefault(uc => uc.ChannelId == channel.Id);
+
+                // Set temporary properties
+                channel.IsUserMember = userChannel != null && userChannel.IsAccepted;
+                channel.IsPending = userChannel != null && !userChannel.IsAccepted && !userChannel.IsModerator;
+            }
 
 
             var search = "";
@@ -273,18 +323,58 @@ namespace Nora.Controllers
             return View();
         }
 
+
+
         [Authorize(Roles = "User,Admin")]
         public IActionResult MembersList(int? id)
         {
-            var members = db.UserChannels.Include("User")
-               .Where(uc => uc.ChannelId == id)
-               .OrderBy(uc => uc.JoinDate);
+            if (id == null)
+            {
+                return BadRequest("Channel ID is required.");
+            }
 
+            var channel = db.Channels
+                .Include(c => c.UserChannels)
+                .ThenInclude(uc => uc.User)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (channel == null)
+            {
+                return NotFound("Channel not found.");
+            }
+
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            var isMember = channel.UserChannels
+        .Any(uc => uc.UserId == currentUserId && uc.IsAccepted);
+
+            if (!isMember)
+            {
+                return Forbid(); // 403 Forbidden
+            }
+
+            // Check if the current user is a moderator for the channel
+            var isCurrentUserModerator = channel.UserChannels
+                .Any(uc => uc.UserId == currentUserId && uc.IsModerator);
+
+            // Identify the creator of the channel
+            var creatorUserId = channel.UserId;
+            // Get members of the channel
+            var members = channel.UserChannels
+                .OrderBy(uc => uc.JoinDate)
+                .ToList();
+
+            // Pass data to the view
             ViewBag.Members = members;
+            ViewBag.IsCurrentUserModerator = isCurrentUserModerator;
+            ViewBag.CreatorUserId = creatorUserId; // Pass the creator's UserId to the view
 
             return View();
         }
-        [Authorize(Roles = "User,Admin")]
+
+
+        
         public async Task<IActionResult> JoinChannel(int? id)
         {
 
@@ -310,6 +400,8 @@ namespace Nora.Controllers
             return RedirectToAction("Show", new { id });
         }
 
+
+        
 
     }
 }

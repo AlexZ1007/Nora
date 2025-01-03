@@ -1,0 +1,152 @@
+﻿@model Nora.Models.Channel
+
+<div class="chat-container">
+    <h2 class="channel-title">@Model.Title</h2>
+    <div class="chat-messages">
+        @if (Model.Messages != null && Model.Messages.Any())
+        {
+            foreach (var message in Model.Messages.OrderBy(m => m.Date))
+            {
+                <div class="chat-message @(message.User?.UserName == User.Identity.Name ? "my-message" : "other-message")">
+                    <div class="message-content">
+                        <strong>@message.User?.UserName:</strong>
+                        @if (message.IsDeleted)
+                        {
+                            <span class="text-muted"><em>Message Deleted</em></span>
+                        }
+                        else
+                        {
+                            @message.Content
+                        }
+                    </div>
+                    <div class="message-meta">
+                        <span class="timestamp">@message.Date.ToString("g")</span>
+                    </div>
+                    @if (!message.IsDeleted)
+                    {
+                            <div class="action-buttons">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <a class="btn btn-outline-primary" asp-controller="Messages" asp-action="Edit" asp-route-id="@message.Id">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <form method="post" asp-controller="Messages" asp-action="Delete" asp-route-id="@message.Id" onsubmit="return confirm('Are you sure you want to delete this message?');">
+                                        <button class="btn btn-outline-danger" type="submit">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">No messages in this channel yet.</p>
+        }
+    </div>
+
+    <div class="chat-input mt-3">
+        <form asp-action="SendMessage" asp-controller="Messages" method="post" class="d-flex align-items-center">
+            <input type="hidden" name="ChannelId" value="@Model.Id" />
+            <input type="text" name="Content" id="messageBox" class="form-control me-2" placeholder="Type your message..." />
+            <button type="submit" id="sendButton" class="btn btn-primary" disabled>Send</button>
+        </form>
+    </div>
+</div>
+
+
+
+
+<style>
+    .action-buttons .btn {
+        padding: 4px 8px;
+        font-size: 0.85em; 
+        line-height: 1; 
+    }
+
+    .chat-container {
+        overflow-y: auto;
+        max-width: 90%x;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #f9f9f9;
+    }
+
+    .channel-title {
+        background: #007bff;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .chat-messages {
+        flex-grow: 1;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 15px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chat-message {
+        max-width: 70%;
+        padding: 5px 10px;
+        border-radius: 10px;
+        word-wrap: break-word;
+        display: inline-block;
+        position: relative;
+        margin-top:2px;
+    }
+
+    .my-message {
+        background: #d1e7dd;
+        align-self: flex-end;
+        text-align: right;
+    }
+
+    .other-message {
+        background: #f8d7da;
+        align-self: flex-start;
+        text-align: left;
+    }
+
+    .message-content {
+        white-space: inline-block;
+        line-height: 1.4;
+    }
+
+    .message-meta {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-top: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .chat-input {
+        background: #f1f1f1;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+    }
+
+        .chat-input input {
+            flex-grow: 1;
+        }
+</style>
+
+<script>
+    const messageBox = document.getElementById('messageBox');
+    const sendButton = document.getElementById('sendButton');
+
+    messageBox.addEventListener('input', () => {
+        sendButton.disabled = messageBox.value.trim() === '';
+    });
+</script>
