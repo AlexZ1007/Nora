@@ -26,10 +26,13 @@ namespace Nora.Controllers
                 .ThenInclude(m => m.User)
                 .FirstOrDefaultAsync(c => c.Id == channelId);
 
+            var currentUser = await _userManager.GetUserAsync(User);
+
             if (channel == null)
             {
                 return NotFound();
             }
+            ViewBag.CurrentUserId = currentUser?.Id;
 
             return View(channel);
         }
