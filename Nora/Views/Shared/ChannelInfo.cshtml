@@ -36,9 +36,40 @@
             <i class="bi bi-person me-2 text-secondary"></i>
             <span class="text-secondary fw-semibold">@Model.User.UserName</span>
         </div>
-        <a class="btn btn-success" asp-controller="Channels" asp-action="@(ViewData["ChannelButtonAction"])" asp-route-id="@Model.Id">
-            Join
-        </a>
+        
+    
+
+    
+    @if (Model.IsUserMember)
+    {
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-primary" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
+                <i class="bi bi-info-circle"></i> Members
+            </a>
+            <a class="btn btn-success" asp-controller="Messages" asp-action="Index" asp-route-id="@Model.Id">
+                <i class="bi bi-chat-dots"></i> Chat
+            </a>
+        </div>
+
+    }
+    else if (Model.IsPending)
+    {
+            <a class="btn btn-success" asp-controller="Channels" asp-action="Show" asp-route-id="@Model.Id">
+                <i class="bi bi-chat-dots"></i> Pending Request
+            </a>
+    }
+    else
+    {
+        <form method="post" asp-action="JoinChannel" asp-controller="Channels">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button class="btn btn-primary">
+                <i class="bi bi-plus"></i> Join
+            </button>
+        </form>
+    }
+
     </div>
+        
+    
 
 </div>

@@ -49,5 +49,13 @@ namespace Nora.Models
         public virtual ICollection<UserChannel>? UserChannels { get; set; }
         public virtual ApplicationUser? User { get; set; }
 
+        [NotMapped]
+        public bool IsUserMember { get; set; }
+        [NotMapped]
+        public bool IsPending { get; set; }
+        [NotMapped]
+        public string CreatorUserId { get; set; }
+
+
     }
 }

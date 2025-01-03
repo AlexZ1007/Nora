@@ -20,16 +20,21 @@ namespace Nora.Controllers
         public JsonResult Accept(int id)
         {
             var userChannel = db.UserChannels
-                .Include(uc => uc.User) // Eagerly load User property
+                .Include(uc => uc.User)
+                .Include(uc => uc.Channel) // Load Channel to access creator
                 .SingleOrDefault(uc => uc.Id == id);
 
             if (userChannel == null)
                 return Json(new { success = false, message = "User not found." });
 
+            if (userChannel.UserId == userChannel.Channel.UserId)
+            {
+                return Json(new { success = false, message = "The creator's status cannot be modified." });
+            }
+
             userChannel.IsAccepted = true;
             db.SaveChanges();
 
-            // Project the data to avoid circular references
             var result = new
             {
                 userChannel.Id,
@@ -46,15 +51,22 @@ namespace Nora.Controllers
             return Json(new { success = true, userChannel = result });
         }
 
+
         [HttpPost]
         public JsonResult Deny(int id)
         {
             var userChannel = db.UserChannels
                 .Include(uc => uc.User)
+                .Include(uc => uc.Channel)
                 .SingleOrDefault(uc => uc.Id == id);
 
             if (userChannel == null)
                 return Json(new { success = false, message = "User not found." });
+
+            if (userChannel.UserId == userChannel.Channel.UserId)
+            {
+                return Json(new { success = false, message = "The creator cannot be removed." });
+            }
 
             db.UserChannels.Remove(userChannel);
             db.SaveChanges();
@@ -62,15 +74,22 @@ namespace Nora.Controllers
             return Json(new { success = true, userId = id });
         }
 
+
         [HttpPost]
         public JsonResult MakeModerator(int id)
         {
             var userChannel = db.UserChannels
                 .Include(uc => uc.User)
+                .Include(uc => uc.Channel)
                 .SingleOrDefault(uc => uc.Id == id);
 
             if (userChannel == null)
                 return Json(new { success = false, message = "User not found." });
+
+            if (userChannel.UserId == userChannel.Channel.UserId)
+            {
+                return Json(new { success = false, message = "The creator is already a moderator by default." });
+            }
 
             userChannel.IsModerator = true;
             db.SaveChanges();
@@ -91,15 +110,22 @@ namespace Nora.Controllers
             return Json(new { success = true, userChannel = result });
         }
 
+
         [HttpPost]
         public JsonResult RemoveModerator(int id)
         {
             var userChannel = db.UserChannels
                 .Include(uc => uc.User)
+                .Include(uc => uc.Channel)
                 .SingleOrDefault(uc => uc.Id == id);
 
             if (userChannel == null)
                 return Json(new { success = false, message = "User not found." });
+
+            if (userChannel.UserId == userChannel.Channel.UserId)
+            {
+                return Json(new { success = false, message = "The creator cannot be demoted as a moderator." });
+            }
 
             userChannel.IsModerator = false;
             db.SaveChanges();
@@ -125,15 +151,24 @@ namespace Nora.Controllers
         {
             var userChannel = db.UserChannels
                 .Include(uc => uc.User)
+                .Include(uc => uc.Channel)
                 .SingleOrDefault(uc => uc.Id == id);
 
             if (userChannel == null)
                 return Json(new { success = false, message = "User not found." });
+
+            if (userChannel.UserId == userChannel.Channel.UserId)
+            {
+                return Json(new { success = false, message = "The creator cannot be removed from the channel." });
+            }
 
             db.UserChannels.Remove(userChannel);
             db.SaveChanges();
 
             return Json(new { success = true, userId = id });
         }
+
+
+        
     }
 }

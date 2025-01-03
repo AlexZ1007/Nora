@@ -46,3 +46,41 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+}
+
+.chat-input {
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+}
+
+    .chat-input form {
+        display: flex;
+        align-items: center;
+    }
+
+    .chat-input input[type="text"] {
+        flex-grow: 1;
+    }
+
+
+

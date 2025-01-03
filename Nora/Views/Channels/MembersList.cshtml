@@ -1,10 +1,11 @@
 ﻿@{
     var members = ViewBag.Members as IEnumerable<Nora.Models.UserChannel>;
+    var isCurrentUserModerator = ViewBag.IsCurrentUserModerator ?? false;
+    var creatorUserId = ViewBag.CreatorUserId as string;
 }
 <br />
 <h2 class="text-center">Members</h2>
 <br />
-
 
 <div class="container">
     <div class="row">
@@ -28,23 +29,36 @@
                                 <td>@(member.IsModerator ? "Moderator" : "Member")</td>
                                 <td>@member.JoinDate.ToString("yyyy-MM-dd")</td>
                                 <td>
-                                    @if (!member.IsAccepted)
+                                    @if (isCurrentUserModerator)
                                     {
-                                        <button class="btn btn-success btn-sm" data-action="accept">Accept</button>
-                                        <button class="btn btn-danger btn-sm" data-action="deny">Deny</button>
+                                        @if (member.UserId != creatorUserId) 
+                                        {
+                                            @if (!member.IsAccepted)
+                                            {
+                                                <button class="btn btn-success btn-sm" data-action="accept">Accept</button>
+                                                <button class="btn btn-danger btn-sm" data-action="deny">Deny</button>
+                                            }
+                                            else if (member.IsAccepted && !member.IsModerator)
+                                            {
+                                                <button class="btn btn-warning btn-sm" data-action="makeModerator">Make Moderator</button>
+                                                <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>
+                                            }
+                                            else if (member.IsAccepted && member.IsModerator)
+                                            {
+                                                <button class="btn btn-secondary btn-sm" data-action="removeModerator">Remove Moderator</button>
+                                                <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>Creator</span> <!-- Display this for the creator -->
+                                        }
                                     }
-                                    else if (member.IsAccepted && !member.IsModerator)
+                                    else
                                     {
-                                        <button class="btn btn-warning btn-sm" data-action="makeModerator">Make Moderator</button>
-                                        <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>
-                                    }
-                                    else if (member.IsAccepted && member.IsModerator)
-                                    {
-                                        <button class="btn btn-secondary btn-sm" data-action="removeModerator">Remove Moderator</button>
-                                        <button class="btn btn-danger btn-sm" data-action="remove">Remove</button>
+                                        <span>—</span> <!-- No actions for regular members -->
                                     }
                                 </td>
-
                             </tr>
                         }
                     }
@@ -59,6 +73,7 @@
         </div>
     </div>
 </div>
+
 
 
 @section Scripts {
