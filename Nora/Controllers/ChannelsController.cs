@@ -8,7 +8,6 @@ using Nora.Models;
 namespace Nora.Controllers
 {
 
-    [Authorize(Roles ="User, Admin")]
     public class ChannelsController : Controller
     {
 
@@ -78,7 +77,7 @@ namespace Nora.Controllers
         [Authorize(Roles = "User,Admin")]
         public IActionResult New()
         {
-            ViewBag.Categories = db.Categories.ToList(); // Assuming there's a `Categories` table in the database.
+            ViewBag.Categories = db.Categories.ToList(); 
             return View();
         }
 
@@ -94,6 +93,7 @@ namespace Nora.Controllers
 
             var currentUser = await _userManager.GetUserAsync(User);
 
+            // Set basic properties for the channel
             channel.Date = DateTime.Now;
             channel.UserId = currentUser.Id;
 
@@ -113,28 +113,27 @@ namespace Nora.Controllers
                 db.CategoryChannels.Add(categoryChannel);
             }
 
-            await db.SaveChangesAsync();
-
-            var userChannel = new UserChannel();
-
-            userChannel.ChannelId = channel.Id;
-            userChannel.UserId = currentUser.Id;
-            userChannel.IsModerator = true;
-            userChannel.IsAccepted = true;
-
+            // Automatically add the creator to the UserChannels table as a moderator
+            var userChannel = new UserChannel
+            {
+                UserId = currentUser.Id,
+                ChannelId = channel.Id,
+                IsAccepted = true, // Automatically accepted
+                IsModerator = true, // Mark as moderator
+                JoinDate = DateTime.Now
+            };
             db.UserChannels.Add(userChannel);
 
-            // Save 
             await db.SaveChangesAsync();
 
-            TempData["message"] = "Channel created successfully!";
+            TempData["message"] = "Canalul a fost adăugat cu succes!";
             TempData["messageType"] = "success";
 
             return RedirectToAction("Index");
         }
 
+
         [HttpGet]
-        [Authorize(Roles = "User,Admin")]
         public IActionResult Show(int id)
         {
             var channel = db.Channels
@@ -143,20 +142,35 @@ namespace Nora.Controllers
                             .Include(c => c.UserChannels) // Include UserChannels to check membership
                             .FirstOrDefault(c => c.Id == id);
 
+
             if (channel == null)
             {
                 return NotFound();
             }
 
+
             var creatorUserId = channel.UserId;
-            ViewBag.CreatorUserId = creatorUserId;
 
             var userId = _userManager.GetUserId(User);
 
             // Check if the current user is a member of the channel
             var userChannel = channel.UserChannels?.FirstOrDefault(uc => uc.UserId == userId);
 
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Check if the current user is an admin, creator, or moderator
+            var isAdmin = User.IsInRole("Admin");
+            var isModerator = channel.UserChannels
+                                      .Any(uc => uc.UserId == currentUserId && uc.IsModerator);
+        
+            if (!isAdmin && !isModerator )
+            {
+                return Forbid(); // 403 Forbidden
+            }
+
+            ViewBag.CreatorUserId = creatorUserId;
             channel.IsUserMember = userChannel != null && userChannel.IsAccepted;
+
 
             return View(channel);
         }
@@ -166,23 +180,29 @@ namespace Nora.Controllers
         {
             var channel = db.Channels
                             .Include(c => c.CategoryChannels)
-                            .ThenInclude(cc => cc.Category)
+                            .Include (c => c.UserChannels)
                             .FirstOrDefault(c => c.Id == id);
+
+
+
 
             if (channel == null)
             {
                 return NotFound();
             }
 
-            var categories = db.Categories.ToList();
-
             var currentUserId = _userManager.GetUserId(User);
 
-            if (channel.UserId != currentUserId)
+            // Check if the current user is an admin or a moderator for this channel
+            var isAdmin = User.IsInRole("Admin");
+            var isModerator = channel.UserChannels.Any(uc => uc.UserId == currentUserId && uc.IsModerator);
+
+            if (!isAdmin && !isModerator)
             {
                 return Forbid(); // 403 Forbidden
             }
 
+            var categories = db.Categories.ToList();
             ViewBag.Categories = categories;
             ViewBag.SelectedCategoryIds = channel.CategoryChannels?.Select(cc => cc.CategoryId).ToList();
 
@@ -193,8 +213,10 @@ namespace Nora.Controllers
         public IActionResult Edit(int id, Channel updatedChannel, List<int> SelectedCategoryIds)
         {
             var channel = db.Channels
-                            .Include(c => c.CategoryChannels)
-                            .FirstOrDefault(c => c.Id == id);
+                .Include(c => c.CategoryChannels) // Include categories
+                .Include(c => c.UserChannels) // Include UserChannels to check moderators
+                .FirstOrDefault(c => c.Id == id);
+
 
             if (channel == null)
             {
@@ -203,8 +225,11 @@ namespace Nora.Controllers
 
             var currentUserId = _userManager.GetUserId(User);
 
-            // Check if the current user is the creator
-            if (channel.UserId != currentUserId)
+            // Check if the current user is an admin or a moderator for this channel
+            var isAdmin = User.IsInRole("Admin");
+            var isModerator = channel.UserChannels.Any(uc => uc.UserId == currentUserId && uc.IsModerator);
+
+            if (!isAdmin && !isModerator)
             {
                 return Forbid(); // 403 Forbidden
             }
@@ -246,7 +271,10 @@ namespace Nora.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var channel = db.Channels.Include(c => c.CategoryChannels).FirstOrDefault(c => c.Id == id);
+            var channel = db.Channels
+                .Include(c => c.CategoryChannels)
+                .Include(c => c.UserChannels) // Include UserChannels to check moderators
+                .FirstOrDefault(c => c.Id == id);
 
             if (channel == null)
             {
@@ -255,8 +283,10 @@ namespace Nora.Controllers
 
             var currentUserId = _userManager.GetUserId(User);
 
-            // Check if the current user is the creator
-            if (channel.UserId != currentUserId)
+            var isAdmin = User.IsInRole("Admin");
+            var isModerator = channel.UserChannels.Any(uc => uc.UserId == currentUserId && uc.IsModerator);
+
+            if (!isAdmin && !isModerator)
             {
                 return Forbid(); // 403 Forbidden
             }
@@ -374,34 +404,49 @@ namespace Nora.Controllers
         }
 
 
-        
+
         public async Task<IActionResult> JoinChannel(int? id)
         {
+            if (id == null)
+            {
+                return BadRequest("Channel ID is required.");
+            }
 
             var currentUser = await _userManager.GetUserAsync(User);
 
-            var userChannel = new UserChannel();
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
 
+            // Check if the user is already in the channel
             var userChannelExists = db.UserChannels.Any(uc => uc.UserId == currentUser.Id && uc.ChannelId == id);
-            if (userChannelExists) {
+            if (userChannelExists)
+            {
                 return RedirectToAction("Show", new { id });
             }
 
-            userChannel.ChannelId = id;
-            userChannel.UserId = currentUser.Id;
-            userChannel.JoinDate = DateTime.Now;
+            // Create a new UserChannel entry
+            var userChannel = new UserChannel
+            {
+                ChannelId = id.Value,
+                UserId = currentUser.Id,
+                JoinDate = DateTime.Now,
+                IsAccepted = User.IsInRole("Admin"), // Automatically accept if the user is an Admin
+                IsModerator = User.IsInRole("Admin") // Optionally, make Admins moderators by default
+            };
 
             db.UserChannels.Add(userChannel);
 
-            // Save 
+            // Save the changes
             await db.SaveChangesAsync();
-
 
             return RedirectToAction("Show", new { id });
         }
 
 
-        
+
+
 
     }
 }

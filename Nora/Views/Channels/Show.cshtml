@@ -38,15 +38,14 @@
                         }
                     </ul>
                 </div>
-                @if(Model.CreatorUserId==Model.UserId)
-                {
+               
                 <div class="card-footer text-end">
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editează</a>
                     <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-danger">Șterge</button>
                     </form>
                 </div>
-                }
+                
             </div>
         </div>
     </div>
