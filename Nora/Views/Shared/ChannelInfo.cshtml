@@ -42,14 +42,9 @@
     
     @if (Model.IsUserMember)
     {
-        <div class="d-flex align-items-center gap-2">
-            <a class="btn btn-primary" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
-                <i class="bi bi-info-circle"></i> Members
-            </a>
-            <a class="btn btn-success" asp-controller="Messages" asp-action="Index" asp-route-id="@Model.Id">
-                <i class="bi bi-chat-dots"></i> Chat
-            </a>
-        </div>
+        <a class="btn btn-success" asp-controller="Messages" asp-action="Index" asp-route-id="@Model.Id">
+            <i class="bi bi-chat-dots"></i> Chat
+        </a>
 
     }
     else if (Model.IsPending)

@@ -53,8 +53,8 @@ namespace Nora.Models
         public bool IsUserMember { get; set; }
         [NotMapped]
         public bool IsPending { get; set; }
-        [NotMapped]
-        public string CreatorUserId { get; set; }
+
+        
 
 
     }

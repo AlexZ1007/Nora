@@ -1,7 +1,29 @@
 ﻿@model Nora.Models.Channel
 
 <div class="chat-container">
-    <h2 class="channel-title">@Model.Title</h2>
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-between p-3 border rounded shadow-sm bg-light">
+        <!-- Title Section -->
+        <h2 class="mb-3 mb-md-0 text-primary">
+            @Model.Title
+        </h2>
+
+        <!-- Buttons Section -->
+        <div class="d-flex gap-2">
+            <!-- Members Button -->
+            <a class="btn btn-outline-primary" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
+                <i class="bi bi-people-fill"></i> Members
+            </a>
+
+            <!-- Details Button (visible only to Admins or Moderators) -->
+            @if (User.IsInRole("Admin") || ViewBag.IsCurrentUserModerator)
+            {
+                <a class="btn btn-outline-secondary" asp-controller="Channels" asp-action="Show" asp-route-id="@Model.Id">
+                    <i class="bi bi-info-circle"></i> Details
+                </a>
+            }
+        </div>
+    </div>
+
     <div class="chat-messages">
         @if (Model.Messages != null && Model.Messages.Any())
         {
@@ -24,7 +46,7 @@
                     </div>
                     @if (!message.IsDeleted)
                     {
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("Admin") || ViewBag.IsCurrentUserModerator)
                         {
                             <div class="action-buttons">
                                 <div class="d-inline-flex align-items-center gap-2">
@@ -39,7 +61,7 @@
                                 </div>
                             </div>
                         }
-                        @if(message.User?.Id==ViewBag.CurrentUserId)
+                        else if(message.User?.Id==ViewBag.CurrentUserId)
                         {
                             <div class="action-buttons">
                                 <div class="d-inline-flex align-items-center gap-2">
