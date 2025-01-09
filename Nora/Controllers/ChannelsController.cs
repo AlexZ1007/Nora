@@ -61,9 +61,9 @@ namespace Nora.Controllers
 
             if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
             {
-                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim();
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim().ToLower();
 
-                channels = channels.Where(c => c.Title.Contains(search)).ToList();
+                channels = channels.Where(c => c.Title.ToLower().Contains(search)).ToList();
             }
 
             ViewBag.SearchString = search;
@@ -314,37 +314,32 @@ namespace Nora.Controllers
                      .Include(c => c.User)
                      .Include(c => c.UserChannels)
                      .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId))
-                     .OrderByDescending(c => c.Date);
+                     .OrderByDescending(c => c.Date).ToList();
 
             // Pass this data to the view
             var userChannels = db.UserChannels.Where(uc => uc.UserId == userId).ToList();
 
-            foreach (var channel in channels)
-            {
-                var userChannel = userChannels.FirstOrDefault(uc => uc.ChannelId == channel.Id);
-
-                // Set temporary properties
-                channel.IsUserMember = userChannel != null && userChannel.IsAccepted;
-                channel.IsPending = userChannel != null && !userChannel.IsAccepted && !userChannel.IsModerator;
-            }
-
+         
 
             var search = "";
 
             if (Convert.ToString(HttpContext.Request.Query["search"]) != null)
             {
-                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim();
+                search = Convert.ToString(HttpContext.Request.Query["search"]).Trim().ToLower();
 
-                channels = db.Channels
-                     .Include(c => c.CategoryChannels)
-                     .ThenInclude(cc => cc.Category)
-                     .Include(c => c.User)
-                     .Include(c => c.UserChannels)
-                     .Where(c => c.UserChannels != null && c.UserChannels.Any(uc => uc.UserId == userId) && c.Title.Contains(search))
-                     .OrderByDescending(c => c.Date);
-
+                channels = channels.Where(c => c.Title.ToLower().Contains(search)).ToList();
 
             }
+
+            foreach (var channel in channels)
+            {
+                var userChannel = userChannels.FirstOrDefault(uc => uc.ChannelId == channel.Id);
+
+
+                channel.IsUserMember = userChannel != null && userChannel.IsAccepted;
+                channel.IsPending = userChannel != null && !userChannel.IsAccepted && !userChannel.IsModerator;
+            }
+
 
             ViewBag.SearchString = search;
             ViewBag.Channels = channels;
@@ -423,7 +418,7 @@ namespace Nora.Controllers
             var userChannelExists = db.UserChannels.Any(uc => uc.UserId == currentUser.Id && uc.ChannelId == id);
             if (userChannelExists)
             {
-                return RedirectToAction("Show", new { id });
+                return RedirectToAction("Index", "Messages", new { id });
             }
 
             // Create a new UserChannel entry
@@ -432,8 +427,8 @@ namespace Nora.Controllers
                 ChannelId = id.Value,
                 UserId = currentUser.Id,
                 JoinDate = DateTime.Now,
-                IsAccepted = User.IsInRole("Admin"), // Automatically accept if the user is an Admin
-                IsModerator = User.IsInRole("Admin") // Optionally, make Admins moderators by default
+                IsAccepted = User.IsInRole("Admin"), 
+                IsModerator = User.IsInRole("Admin") 
             };
 
             db.UserChannels.Add(userChannel);
@@ -441,7 +436,7 @@ namespace Nora.Controllers
             // Save the changes
             await db.SaveChangesAsync();
 
-            return RedirectToAction("Show", new { id });
+            return RedirectToAction("UserChannels", new { id });
         }
 
 

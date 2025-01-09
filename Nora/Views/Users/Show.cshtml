@@ -11,19 +11,19 @@
 
             @if (ViewBag.Roles.Count > 0)
             {
-                <p><i class="bi bi-person"> </i> Rol utilizator:</p>
+                <p><i class="bi bi-person"> </i> Rol utilizator:
                 @foreach (var role in ViewBag.Roles)
                 {
-                    <span class="rounded-pill bg-dark mr-2 px-4 py-2 text-white">@role</span>
+                    <span class="rounded-pill bg-dark mx-2 px-4 py-2 text-white">@role</span>
                 }
+                </p>
             }
         </div>
 
-
-
+        
         @if ((string)Model.Id != ViewBag.UserCurent.Id)
         {
-            <div class="d-flex flex-row justify-content-between p-3">
+            <div class="d-flex flex-row justify-content-between my-3">
                 <form asp-controller="Users" asp-action="Delete" method="post" asp-route-id="@Model.Id">
                     <button type="submit" class="btn btn-danger">Sterge utilizator</button>
                 </form>

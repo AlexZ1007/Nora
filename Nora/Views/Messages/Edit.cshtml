@@ -12,6 +12,7 @@
         <label for="Content" class="form-label">Message Content</label>
         <textarea asp-for="Content" class="form-control" rows="4" required></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    <a class="btn btn-secondary" asp-controller="Messages" asp-action="Index" asp-route-id="@Model.ChannelId"> Cancel </a>
+    <button type="submit" class="btn btn-primary">Save Changes</button>    
+    <a asp-controller="Messages" asp-action="Index" asp-route-id="@Model.ChannelId" class="btn btn-secondary">Cancel</a>
+
 </form>
