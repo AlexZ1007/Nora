@@ -8,10 +8,10 @@
     <div class="row">
         <div class="col-8 offset-2">
             <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between">
-                    <h3>@Model.Title</h3>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center bg-light py-3" >
+                    <h3 class="text-black m-0">@Model.Title</h3>
 
-                    @if (Model.IsUserMember)//@if (Model.IsUserMember || User.IsInRole("Admin"))
+                    @if (Model.IsUserMember) // @if (Model.IsUserMember || User.IsInRole("Admin"))
                     {
                         <a class="btn btn-success" asp-controller="Channels" asp-action="MembersList" asp-route-id="@Model.Id">
                             <i class="bi bi-people"></i> Members
@@ -34,15 +34,15 @@
                         }
                         else
                         {
-                            <li class="list-group-item">Nicio categorie asociată.</li>
+                            <li class="list-group-item">No category associated.</li>
                         }
                     </ul>
                 </div>
                
                 <div class="card-footer text-end">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Editează</a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
                     <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-danger">Șterge</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </div>
                 

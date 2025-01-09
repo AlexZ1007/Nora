@@ -6,6 +6,7 @@ using Nora.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
 
 namespace Nora.Controllers
 {
@@ -25,8 +26,8 @@ namespace Nora.Controllers
         {
             var channel = await _context.Channels
                         .Include(c => c.Messages)
-                            .ThenInclude(m => m.User)
-                        .Include(c => c.UserChannels) // Include UserChannels relationship
+                        .ThenInclude(m => m.User)
+                        .Include(c => c.UserChannels) 
                         .FirstOrDefaultAsync(c => c.Id == channelId);
 
 
@@ -36,12 +37,33 @@ namespace Nora.Controllers
             {
                 return NotFound();
             }
+
+
             var currentUserId = _userManager.GetUserId(User);
+
+            // check if user is accepted in the channel
+            var isUserInChannel = channel.UserChannels
+                .Any(uc => uc.UserId == currentUserId && uc.IsAccepted);
+
+            if(!isUserInChannel)
+            {
+                return Forbid();
+            }
+
+
             var isCurrentUserModerator = channel.UserChannels
                 .Any(uc => uc.UserId == currentUserId && uc.IsModerator);
 
-            ViewBag.CurrentUserId = currentUser?.Id;
+            ViewBag.CurrentUserId = currentUserId;
             ViewBag.IsCurrentUserModerator = isCurrentUserModerator;
+
+            foreach (var message in channel.Messages)
+            {
+                // Extract the first URL from the message content
+
+                message.EmbeddedUrl = HelperExtractFirstUrl(message.Content);
+            }
+
 
             return View(channel);
         }
@@ -155,6 +177,15 @@ namespace Nora.Controllers
             return Redirect("/Messages/Index/" + message.ChannelId); // Redirect to the channel's message list
         }
 
+        private string HelperExtractFirstUrl(string message)
+        {
+            var urlRegex = new Regex(@"https?:\/\/[^\s]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var match = urlRegex.Match(message);
 
+            return match.Success ? match.Value : null;
+        }
     }
+
+   
+
 }
