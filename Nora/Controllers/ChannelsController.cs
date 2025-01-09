@@ -394,7 +394,7 @@ namespace Nora.Controllers
             ViewBag.Members = members;
             ViewBag.IsCurrentUserModerator = isCurrentUserModerator;
             ViewBag.CreatorUserId = creatorUserId; // Pass the creator's UserId to the view
-
+            ViewBag.CurrentUserId=currentUserId;
             return View();
         }
 
