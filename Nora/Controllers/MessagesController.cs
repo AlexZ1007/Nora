@@ -155,6 +155,28 @@ namespace Nora.Controllers
             return Redirect("/Messages/Index/" + message.ChannelId); // Redirect to the channel's message list
         }
 
+        [HttpPost]
+        [Authorize(Roles = "User,Admin")]
+        public async Task<IActionResult> Leave(int id)
+        {
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Check if the user is a member of the channel
+            var userChannel = await _context.UserChannels
+                .FirstOrDefaultAsync(uc => uc.ChannelId == id && uc.UserId == currentUserId);
+
+            if (userChannel == null)
+            {
+                return NotFound();
+            }
+
+            // Remove the user from the channel (Leave the channel)
+            _context.UserChannels.Remove(userChannel);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Channels"); // Redirect to the list of channels or wherever you'd like
+        }
+
 
     }
 }
