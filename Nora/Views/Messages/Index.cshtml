@@ -45,7 +45,7 @@
                                 {
                                     <img src="@message.EmbeddedUrl" alt="Embedded Image" style="max-width: 100%; height: auto; margin-top: 10px;" />
                                 }
-                                else if (message.EmbeddedUrl.EndsWith(".mp4") || message.EmbeddedUrl.EndsWith(".webm"))
+                                else if (message.EmbeddedUrl.EndsWith(".mp4"))
                                 {
                                     <video controls style="max-width: 100%; margin-top: 10px;">
                                         <source src="@message.EmbeddedUrl" type="video/mp4">
