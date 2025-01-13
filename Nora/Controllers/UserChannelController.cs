@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nora.Data;
+using Nora.Models;
 using System.Linq;
 
 namespace Nora.Controllers
@@ -10,10 +12,13 @@ namespace Nora.Controllers
     public class UserChannelController : Controller
     {
         private readonly ApplicationDbContext db;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserChannelController(ApplicationDbContext context)
+        public UserChannelController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             db = context;
+            _userManager = userManager;
+
         }
 
         [HttpPost]
@@ -168,7 +173,33 @@ namespace Nora.Controllers
             return Json(new { success = true, userId = id });
         }
 
+        [HttpPost]
+        [Authorize(Roles = "User,Admin")]
+        public async Task<IActionResult> Leave(int id)
+        {
+            var currentUserId = _userManager.GetUserId(User);
 
-        
+            // Check if the user is a member of the channel
+            var userChannel = await db.UserChannels
+                .FirstOrDefaultAsync(uc => uc.ChannelId == id && uc.UserId == currentUserId);
+
+            if (userChannel == null)
+            {
+                return NotFound();
+            }
+
+                
+            if (userChannel.UserId == userChannel.Channel.UserId)
+            {
+                return Forbid();
+            }
+
+            db.UserChannels.Remove(userChannel);
+            await db.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Channels"); // Redirect to the list of channels or wherever you'd like
+        }
+
+
     }
 }

@@ -12,26 +12,25 @@ namespace Nora.Controllers
 {
     public class MessagesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext db;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public MessagesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            db = context;
             _userManager = userManager;
         }
 
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> Index([FromRoute(Name = "id")] int channelId)
         {
-            var channel = await _context.Channels
+            var channel = await db.Channels
                         .Include(c => c.Messages)
                         .ThenInclude(m => m.User)
                         .Include(c => c.UserChannels) 
                         .FirstOrDefaultAsync(c => c.Id == channelId);
 
 
-            var currentUser = await _userManager.GetUserAsync(User);
 
             if (channel == null)
             {
@@ -92,8 +91,8 @@ namespace Nora.Controllers
                 ChannelId = channelId
             };
 
-            _context.Messages.Add(message);
-            await _context.SaveChangesAsync();
+            db.Messages.Add(message);
+            await db.SaveChangesAsync();
 
             return Redirect("/Messages/Index/"+channelId);
         }
@@ -102,7 +101,7 @@ namespace Nora.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var message = await _context.Messages.FirstOrDefaultAsync(m => m.Id == id);
+            var message = await db.Messages.FirstOrDefaultAsync(m => m.Id == id);
 
             if (message == null)
             {
@@ -118,7 +117,7 @@ namespace Nora.Controllers
             }
 
             message.IsDeleted = true; // Mark the message as deleted
-            await _context.SaveChangesAsync();
+            await db.SaveChangesAsync();
 
             return Redirect("/Messages/Index/" + message.ChannelId);
         }
@@ -126,7 +125,7 @@ namespace Nora.Controllers
         [Authorize(Roles = "User,Admin")]
         public async Task<IActionResult> Edit(int id)
         {
-            var message = await _context.Messages
+            var message = await db.Messages
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (message == null)
@@ -155,7 +154,7 @@ namespace Nora.Controllers
                 return View();
             }
 
-            var message = await _context.Messages
+            var message = await db.Messages
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (message == null)
@@ -171,35 +170,14 @@ namespace Nora.Controllers
 
             // Update the message content without modifying the date
             message.Content = content;
-            _context.Messages.Update(message);
-            await _context.SaveChangesAsync();
+            db.Messages.Update(message);
+            await db.SaveChangesAsync();
 
             return Redirect("/Messages/Index/" + message.ChannelId); // Redirect to the channel's message list
         }
 
 
-        [HttpPost]
-        [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> Leave(int id)
-        {
-            var currentUserId = _userManager.GetUserId(User);
-
-            // Check if the user is a member of the channel
-            var userChannel = await _context.UserChannels
-                .FirstOrDefaultAsync(uc => uc.ChannelId == id && uc.UserId == currentUserId);
-
-            if (userChannel == null)
-            {
-                return NotFound();
-            }
-
-            // Remove the user from the channel (Leave the channel)
-            _context.UserChannels.Remove(userChannel);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("Index", "Channels"); // Redirect to the list of channels or wherever you'd like
-        }
-
+        
 
         private string HelperExtractFirstUrl(string message)
         {
