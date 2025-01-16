@@ -53,11 +53,11 @@
                             if(!string.IsNullOrEmpty(message.EmbeddedUrl))
                             {
                                 <br />
-                                @if (message.EmbeddedUrl.EndsWith(".jpg") || message.EmbeddedUrl.EndsWith(".png") || message.EmbeddedUrl.EndsWith(".gif"))
+                                @if (message.EmbeddedUrl.Contains(".jpg") || message.EmbeddedUrl.Contains(".png") || message.EmbeddedUrl.Contains(".gif"))
                                 {
                                     <img src="@message.EmbeddedUrl" alt="Embedded Image" style="max-width: 100%; height: auto; margin-top: 10px;" />
                                 }
-                                else if (message.EmbeddedUrl.EndsWith(".mp4"))
+                                else if (message.EmbeddedUrl.Contains(".mp4"))
                                 {
                                     <video controls style="max-width: 100%; margin-top: 10px;">
                                         <source src="@message.EmbeddedUrl" type="video/mp4">
